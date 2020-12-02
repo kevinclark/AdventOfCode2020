@@ -47,10 +47,9 @@ pub fn number_of_valid_part_1_passwords(input: &str) -> usize {
         .filter(|line| {
             let (start, end, letter, pass) = parse(line);
             let range = start..=end;
-            let occurences = pass
-                .chars()
-                .filter(|l| *l == letter.chars().nth(0).unwrap())
-                .count();
+            let needle = letter.as_bytes()[0];
+            let occurences =
+                pass.as_bytes().iter().filter(|c| *c == &needle).count();
 
             range.contains(&occurences)
         })
