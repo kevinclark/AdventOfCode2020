@@ -3,7 +3,7 @@ use std::str;
 fn parse<'a>(line: &'a str) -> (usize, usize, u8, &'a [u8]) {
     let mut parts = line
         .as_bytes()
-        .split(|c| *c == b'-' || *c == b' ' || *c == b':'); // .split(&[b'-', b' ', b':'][..]);
+        .split(|c| *c == b'-' || *c == b' ' || *c == b':');
 
     let start = parts
         .by_ref()
@@ -12,6 +12,7 @@ fn parse<'a>(line: &'a str) -> (usize, usize, u8, &'a [u8]) {
         .unwrap()
         .iter()
         .fold(0, |acc, i| acc * 10 + (*i - b'0') as usize);
+
     let end = parts
         .by_ref()
         .take(1)
@@ -19,6 +20,7 @@ fn parse<'a>(line: &'a str) -> (usize, usize, u8, &'a [u8]) {
         .unwrap()
         .iter()
         .fold(0, |acc, i| acc * 10 + (*i - b'0') as usize);
+
     let letter = parts.by_ref().take(1).next().unwrap()[0];
     let pass = parts.by_ref().skip(1).take(1).next().unwrap();
 
