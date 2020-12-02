@@ -8,6 +8,7 @@ edition = "2018"
 
 [dependencies]
 criterion = "0.3"
+clap = "2"
 
 [[bench]]
 name = "day1"
