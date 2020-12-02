@@ -35,7 +35,7 @@ pub fn number_of_valid_part_2_passwords(input: &str) -> usize {
             let first_match = first == letter.as_bytes()[0];
             let second_match = second == letter.as_bytes()[0];
 
-            (first_match || second_match) && !(first_match && second_match)
+            first_match ^ second_match
         })
         .count()
 }
