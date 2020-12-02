@@ -55,8 +55,7 @@ fn solve_day1() {
 fn solve_day2() {
     println!("# Day 2\n");
 
-    let raw_input = &fs::read("input/2.txt").unwrap();
-    let input = &raw_input[..raw_input.len() - 1];
+    let input = &fs::read("input/2.txt").unwrap();
 
     println!("## Part 1\n");
     println!("{}", day2::number_of_valid_part_1_passwords(&input));

@@ -27,15 +27,19 @@ pub fn number_of_valid_part_2_passwords(input: &[u8]) -> usize {
     input
         .split(|c| *c == b'\n')
         .filter(|line| {
-            let (start, end, letter, pass) = parse(&line);
+            if line == &[] {
+                false
+            } else {
+                let (start, end, letter, pass) = parse(&line);
 
-            let first = pass[start - 1];
-            let second = pass[end - start];
+                let first = pass[start - 1];
+                let second = pass[end - start];
 
-            let first_match = first == letter;
-            let second_match = second == letter;
+                let first_match = first == letter;
+                let second_match = second == letter;
 
-            first_match ^ second_match
+                first_match ^ second_match
+            }
         })
         .count()
 }
@@ -45,11 +49,15 @@ pub fn number_of_valid_part_1_passwords(input: &[u8]) -> usize {
     input
         .split(|c| *c == b'\n')
         .filter(|line| {
-            let (start, end, letter, pass) = parse(&line);
-            let range = start..=end;
-            let occurences = pass.iter().filter(|c| *c == &letter).count();
+            if line == &[] {
+                false
+            } else {
+                let (start, end, letter, pass) = parse(&line);
+                let range = start..=end;
+                let occurences = pass.iter().filter(|c| *c == &letter).count();
 
-            range.contains(&occurences)
+                range.contains(&occurences)
+            }
         })
         .count()
 }
@@ -81,7 +89,7 @@ mod tests {
         assert_eq!(
             2,
             number_of_valid_part_1_passwords(
-                &"1-3 a: abcde\n1-3 b: abcde\n5-10 a: abcde".as_bytes()
+                &"1-3 a: abcde\n1-3 b: abcde\n5-10 a: abcde\n".as_bytes()
             )
         );
     }
