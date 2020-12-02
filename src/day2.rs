@@ -24,9 +24,8 @@ pub fn number_of_valid_passwords(input: &str) -> usize {
             let range = start..=end;
 
             let letter = chars.next().unwrap();
-            chars.by_ref().take(2);
 
-            let pass: String = chars.collect();
+            let pass: String = chars.skip(2).collect();
 
             let occurences = pass.chars().filter(|l| *l == letter).count();
 
