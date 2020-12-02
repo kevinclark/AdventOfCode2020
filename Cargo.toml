@@ -11,5 +11,9 @@ criterion = "0.3"
 clap = "2"
 
 [[bench]]
-name = "benches"
+name = "day1"
+harness = false
+
+[[bench]]
+name = "day2"
 harness = false

@@ -1,40 +1,39 @@
 use std::str;
 
-fn parse<'a>(
-    line: &'a str,
-) -> (usize, usize, char, impl Iterator<Item = char> + 'a) {
-    let mut chars = line.chars();
+fn parse<'a>(line: &'a str) -> (usize, usize, &'a str, &'a str) {
+    let mut parts = line.split(&['-', ' ', ':'][..]);
 
-    let start = chars
+    let start = parts
         .by_ref()
-        .take_while(|c| *c != '-')
-        .collect::<String>()
+        .take(1)
+        .next()
+        .unwrap()
         .parse::<usize>()
         .unwrap();
-
-    let end = chars
+    let end = parts
         .by_ref()
-        .take_while(|c| *c != ' ')
-        .collect::<String>()
+        .take(1)
+        .next()
+        .unwrap()
         .parse::<usize>()
         .unwrap();
+    let letter = parts.by_ref().take(1).next().unwrap();
+    let pass = parts.by_ref().skip(1).take(1).next().unwrap();
 
-    let letter = chars.next().unwrap();
-
-    (start, end, letter, chars.skip(2))
+    (start, end, letter, pass)
 }
 
 pub fn number_of_valid_part_2_passwords(input: &str) -> usize {
     input
         .lines()
         .filter(|line| {
-            let (start, end, letter, mut pass) = parse(line);
+            let (start, end, letter, pass) = parse(line);
 
-            let first = pass.by_ref().nth(start - 1).unwrap();
-            let second = pass.by_ref().nth(end - start - 1).unwrap();
+            let first = pass.as_bytes()[start - 1];
+            let second = pass.as_bytes()[end - start];
 
-            let first_match = first == letter;
-            let second_match = second == letter;
+            let first_match = first == letter.as_bytes()[0];
+            let second_match = second == letter.as_bytes()[0];
 
             (first_match || second_match) && !(first_match && second_match)
         })
@@ -48,7 +47,10 @@ pub fn number_of_valid_part_1_passwords(input: &str) -> usize {
         .filter(|line| {
             let (start, end, letter, pass) = parse(line);
             let range = start..=end;
-            let occurences = pass.filter(|l| *l == letter).count();
+            let occurences = pass
+                .chars()
+                .filter(|l| *l == letter.chars().nth(0).unwrap())
+                .count();
 
             range.contains(&occurences)
         })
@@ -58,6 +60,16 @@ pub fn number_of_valid_part_1_passwords(input: &str) -> usize {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn parsing() {
+        let input = "1-3 a: abcde";
+        let (start, end, letter, pass) = parse(&input);
+        assert_eq!(1, start);
+        assert_eq!(3, end);
+        assert_eq!("a", letter);
+        assert_eq!("abcde", pass);
+    }
 
     #[test]
     fn part_one() {
