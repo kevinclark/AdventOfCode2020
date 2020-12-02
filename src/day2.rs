@@ -1,23 +1,25 @@
 use std::str;
 
-fn parse<'a>(line: &'a str) -> (usize, usize, &'a str, &'a str) {
-    let mut parts = line.split(&['-', ' ', ':'][..]);
+fn parse<'a>(line: &'a str) -> (usize, usize, u8, &'a [u8]) {
+    let mut parts = line
+        .as_bytes()
+        .split(|c| *c == b'-' || *c == b' ' || *c == b':'); // .split(&[b'-', b' ', b':'][..]);
 
     let start = parts
         .by_ref()
         .take(1)
         .next()
         .unwrap()
-        .parse::<usize>()
-        .unwrap();
+        .iter()
+        .fold(0, |acc, i| acc * 10 + (*i - b'0') as usize);
     let end = parts
         .by_ref()
         .take(1)
         .next()
         .unwrap()
-        .parse::<usize>()
-        .unwrap();
-    let letter = parts.by_ref().take(1).next().unwrap();
+        .iter()
+        .fold(0, |acc, i| acc * 10 + (*i - b'0') as usize);
+    let letter = parts.by_ref().take(1).next().unwrap()[0];
     let pass = parts.by_ref().skip(1).take(1).next().unwrap();
 
     (start, end, letter, pass)
@@ -29,11 +31,11 @@ pub fn number_of_valid_part_2_passwords(input: &str) -> usize {
         .filter(|line| {
             let (start, end, letter, pass) = parse(line);
 
-            let first = pass.as_bytes()[start - 1];
-            let second = pass.as_bytes()[end - start];
+            let first = pass[start - 1];
+            let second = pass[end - start];
 
-            let first_match = first == letter.as_bytes()[0];
-            let second_match = second == letter.as_bytes()[0];
+            let first_match = first == letter;
+            let second_match = second == letter;
 
             first_match ^ second_match
         })
@@ -47,9 +49,8 @@ pub fn number_of_valid_part_1_passwords(input: &str) -> usize {
         .filter(|line| {
             let (start, end, letter, pass) = parse(line);
             let range = start..=end;
-            let needle = letter.as_bytes()[0];
-            let occurences =
-                pass.as_bytes().iter().filter(|c| *c == &needle).count();
+            let needle = letter;
+            let occurences = pass.iter().filter(|c| *c == &needle).count();
 
             range.contains(&occurences)
         })
@@ -66,8 +67,8 @@ mod tests {
         let (start, end, letter, pass) = parse(&input);
         assert_eq!(1, start);
         assert_eq!(3, end);
-        assert_eq!("a", letter);
-        assert_eq!("abcde", pass);
+        assert_eq!(b'a', letter);
+        assert_eq!("abcde".as_bytes(), pass);
     }
 
     #[test]
