@@ -1,9 +1,5 @@
-use std::str;
-
-fn parse<'a>(line: &'a str) -> (usize, usize, u8, &'a [u8]) {
-    let mut parts = line
-        .as_bytes()
-        .split(|c| *c == b'-' || *c == b' ' || *c == b':');
+fn parse<'a>(line: &'a [u8]) -> (usize, usize, u8, &'a [u8]) {
+    let mut parts = line.split(|c| *c == b'-' || *c == b' ' || *c == b':');
 
     let start = parts
         .by_ref()
@@ -27,11 +23,11 @@ fn parse<'a>(line: &'a str) -> (usize, usize, u8, &'a [u8]) {
     (start, end, letter, pass)
 }
 
-pub fn number_of_valid_part_2_passwords(input: &str) -> usize {
+pub fn number_of_valid_part_2_passwords(input: &[u8]) -> usize {
     input
-        .lines()
+        .split(|c| *c == b'\n')
         .filter(|line| {
-            let (start, end, letter, pass) = parse(line);
+            let (start, end, letter, pass) = parse(&line);
 
             let first = pass[start - 1];
             let second = pass[end - start];
@@ -44,15 +40,14 @@ pub fn number_of_valid_part_2_passwords(input: &str) -> usize {
         .count()
 }
 
-pub fn number_of_valid_part_1_passwords(input: &str) -> usize {
+pub fn number_of_valid_part_1_passwords(input: &[u8]) -> usize {
     // N-N L: pass
     input
-        .lines()
+        .split(|c| *c == b'\n')
         .filter(|line| {
-            let (start, end, letter, pass) = parse(line);
+            let (start, end, letter, pass) = parse(&line);
             let range = start..=end;
-            let needle = letter;
-            let occurences = pass.iter().filter(|c| *c == &needle).count();
+            let occurences = pass.iter().filter(|c| *c == &letter).count();
 
             range.contains(&occurences)
         })
@@ -66,7 +61,7 @@ mod tests {
     #[test]
     fn parsing() {
         let input = "1-3 a: abcde";
-        let (start, end, letter, pass) = parse(&input);
+        let (start, end, letter, pass) = parse(&input.as_bytes());
         assert_eq!(1, start);
         assert_eq!(3, end);
         assert_eq!(b'a', letter);
@@ -75,14 +70,35 @@ mod tests {
 
     #[test]
     fn part_one() {
-        assert_eq!(1, number_of_valid_part_1_passwords(&"1-3 a: abcde"));
-        assert_eq!(0, number_of_valid_part_1_passwords(&"1-3 x: abcde"));
+        assert_eq!(
+            1,
+            number_of_valid_part_1_passwords(&"1-3 a: abcde".as_bytes())
+        );
+        assert_eq!(
+            0,
+            number_of_valid_part_1_passwords(&"1-3 x: abcde".as_bytes())
+        );
+        assert_eq!(
+            2,
+            number_of_valid_part_1_passwords(
+                &"1-3 a: abcde\n1-3 b: abcde\n5-10 a: abcde".as_bytes()
+            )
+        );
     }
 
     #[test]
     fn part_two() {
-        assert_eq!(1, number_of_valid_part_2_passwords(&"1-3 a: abcde"));
-        assert_eq!(1, number_of_valid_part_2_passwords(&"1-3 a: cbade"));
-        assert_eq!(0, number_of_valid_part_2_passwords(&"1-3 x: cabde"));
+        assert_eq!(
+            1,
+            number_of_valid_part_2_passwords(&"1-3 a: abcde".as_bytes())
+        );
+        assert_eq!(
+            1,
+            number_of_valid_part_2_passwords(&"1-3 a: cbade".as_bytes())
+        );
+        assert_eq!(
+            0,
+            number_of_valid_part_2_passwords(&"1-3 x: cabde".as_bytes())
+        );
     }
 }
