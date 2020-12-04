@@ -6,7 +6,6 @@ pub fn num_trees(bytes: &[u8]) -> u64 {
         .unwrap_or_else(|| bytes.len());
 
     let mut row = 0;
-    let mut col = 0;
     let mut count = 0;
     let mut pos = 0;
 
@@ -16,9 +15,8 @@ pub fn num_trees(bytes: &[u8]) -> u64 {
         }
 
         row += 1;
-        col += 3;
 
-        pos = row * width + (col % (width - 1))
+        pos = row * width + ((row * 3) % (width - 1))
     }
 
     count
