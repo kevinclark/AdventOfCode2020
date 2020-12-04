@@ -74,5 +74,9 @@ fn solve_day3() {
     let input = &fs::read("input/3.txt").unwrap();
 
     println!("## Part 1\n");
-    println!("{}", day3::num_trees(&input));
+    println!("{}", day3::part_1(&input));
+    println!();
+
+    println!("## Part 2\n");
+    println!("{}", day3::part_2(&input));
 }
