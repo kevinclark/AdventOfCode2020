@@ -181,10 +181,10 @@ fn has_valid_fields_and_values(passport_declaration: &[u8]) -> bool {
     let mut right = 0;
     let mut mask = 0u8;
 
-    while right <= passport_declaration.len()
-        && left + 3 <= passport_declaration.len()
-    {
-        if right < passport_declaration.len() {
+    let len = passport_declaration.len();
+
+    while right <= len && left + 3 <= len {
+        if right < len {
             let c = &passport_declaration[right];
 
             if *c != b' ' && *c != b'\n' {
