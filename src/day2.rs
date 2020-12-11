@@ -27,7 +27,7 @@ pub fn number_of_valid_part_2_passwords(input: &[u8]) -> usize {
     input
         .split(|c| *c == b'\n')
         .filter(|line| {
-            if line == &[] {
+            if line.is_empty() {
                 false
             } else {
                 let (start, end, letter, pass) = parse(&line);
@@ -49,7 +49,7 @@ pub fn number_of_valid_part_1_passwords(input: &[u8]) -> usize {
     input
         .split(|c| *c == b'\n')
         .filter(|line| {
-            if line == &[] {
+            if line.is_empty() {
                 false
             } else {
                 let (start, end, letter, pass) = parse(&line);

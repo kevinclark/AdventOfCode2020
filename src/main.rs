@@ -1,4 +1,4 @@
-use aoc2020::{day1, day2, day3};
+use aoc2020::{day1, day2, day3, day4};
 use clap::App;
 use std::fs;
 
@@ -7,6 +7,7 @@ fn main() {
         .arg_from_usage("--day1... 'runs the day 1 solution'")
         .arg_from_usage("--day2... 'runs the day 2 solution'")
         .arg_from_usage("--day3... 'runs the day 3 solution'")
+        .arg_from_usage("--day4... 'runs the day 4 solution'")
         .get_matches();
 
     if matches.is_present("day1") {
@@ -19,6 +20,10 @@ fn main() {
 
     if matches.is_present("day3") {
         solve_day3()
+    }
+
+    if matches.is_present("day4") {
+        solve_day4()
     }
 }
 
@@ -79,4 +84,19 @@ fn solve_day3() {
 
     println!("## Part 2\n");
     println!("{}", day3::part_2(&input));
+}
+
+fn solve_day4() {
+    println!("# Day 4\n");
+
+    let input = &fs::read_to_string("input/4.txt").unwrap();
+
+    println!("## Part 1\n");
+    println!("{}", day4::number_of_passports_with_valid_fields(&input));
+
+    println!("## Part 2\n");
+    println!(
+        "{}",
+        day4::number_of_passports_with_valid_fields_and_values(&input)
+    );
 }
