@@ -130,63 +130,92 @@ fn validate_eyecolor(value: &[u8], current_mask: u8) -> PassportState {
         .unwrap_or(Invalid)
 }
 
-fn has_valid_fields_and_values(passport_declaration: &str) -> bool {
+fn validate_field_and_value(
+    field: &[u8],
+    value: &[u8],
+    current_mask: u8,
+) -> PassportState {
     use PassportState::*;
 
-    let state = passport_declaration
-        .split(&['\n', ' '][..])
-        .filter(|s| !s.is_empty())
-        .map(|s| s.as_bytes().split_at(3))
-        .fold(Valid { mask: 0 }, |state, (field, value)| {
-            let value = &value[1..]; // Skip the colon
+    match field {
+        [b'b', b'y', b'r'] => {
+            validate_year(value, 1920..=2002, current_mask, BYR)
+        }
+        [b'i', b'y', b'r'] => {
+            validate_year(value, 2010..=2020, current_mask, IYR)
+        }
 
-            match state {
-                Invalid => Invalid,
+        [b'e', b'y', b'r'] => {
+            validate_year(value, 2020..=2030, current_mask, EYR)
+        }
 
-                Valid { mask } => match field {
-                    [b'b', b'y', b'r'] => {
-                        validate_year(value, 1920..=2002, mask, BYR)
-                    }
-                    [b'i', b'y', b'r'] => {
-                        validate_year(value, 2010..=2020, mask, IYR)
-                    }
+        [b'h', b'g', b't'] => validate_height(value, current_mask),
 
-                    [b'e', b'y', b'r'] => {
-                        validate_year(value, 2020..=2030, mask, EYR)
-                    }
+        [b'h', b'c', b'l'] => validate_hair_color(value, current_mask),
 
-                    [b'h', b'g', b't'] => validate_height(value, mask),
+        [b'e', b'c', b'l'] => validate_eyecolor(value, current_mask),
 
-                    [b'h', b'c', b'l'] => validate_hair_color(value, mask),
-
-                    [b'e', b'c', b'l'] => validate_eyecolor(value, mask),
-
-                    [b'p', b'i', b'd'] => {
-                        if value.len() == 9
-                            && value.iter().all(|c| *c >= b'0' && *c <= b'9')
-                        {
-                            Valid { mask: mask | PID }
-                        } else {
-                            Invalid
-                        }
-                    }
-
-                    [b'c', b'i', b'd'] => Valid { mask: mask | CID },
-                    _ => state,
-                },
+        [b'p', b'i', b'd'] => {
+            if value.len() == 9
+                && value.iter().all(|c| *c >= b'0' && *c <= b'9')
+            {
+                Valid {
+                    mask: current_mask | PID,
+                }
+            } else {
+                Invalid
             }
-        });
+        }
 
-    match state {
-        Valid { mask } => mask >= 0xfe,
-        _ => false,
+        [b'c', b'i', b'd'] => Valid {
+            mask: current_mask | CID,
+        },
+        _ => Valid { mask: current_mask },
     }
+}
+
+fn has_valid_fields_and_values(passport_declaration: &[u8]) -> bool {
+    use PassportState::*;
+
+    let mut left = 0;
+    let mut right = 0;
+    let mut mask = 0u8;
+
+    while right <= passport_declaration.len()
+        && left + 3 <= passport_declaration.len()
+    {
+        if right < passport_declaration.len() {
+            let c = &passport_declaration[right];
+
+            if *c != b' ' && *c != b'\n' {
+                right += 1;
+                continue;
+            }
+        }
+
+        let field = &passport_declaration[left..left + 3];
+        let value = &passport_declaration[left + 4..right];
+
+        if let Valid { mask: next_mask } =
+            validate_field_and_value(field, value, mask)
+        {
+            mask = next_mask
+        } else {
+            return false;
+        }
+
+        // Move the range up
+        right += 1;
+        left = right;
+    }
+
+    return mask >= 0xfe;
 }
 
 pub fn number_of_passports_with_valid_fields_and_values(input: &str) -> usize {
     input
         .split("\n\n")
-        .filter(|line| has_valid_fields_and_values(line))
+        .filter(|line| has_valid_fields_and_values(line.as_bytes()))
         .count()
 }
 
@@ -239,7 +268,7 @@ iyr:2011 ecl:brn hgt:59in";
         let passport =
             "pid:087499704 hgt:74in ecl:grn iyr:2012 eyr:2030 byr:2003\n\
                         hcl:#623a2f\n\n";
-        assert!(!has_valid_fields_and_values(passport));
+        assert!(!has_valid_fields_and_values(passport.as_bytes()));
     }
 
     #[test]
@@ -247,7 +276,7 @@ iyr:2011 ecl:brn hgt:59in";
         let passport =
             "pid:087499704 hgt:74in ecl:grn iyr:2000 eyr:2030 byr:2002\n\
                         hcl:#623a2f\n\n";
-        assert!(!has_valid_fields_and_values(passport));
+        assert!(!has_valid_fields_and_values(passport.as_bytes()));
     }
 
     #[test]
@@ -255,7 +284,7 @@ iyr:2011 ecl:brn hgt:59in";
         let passport =
             "pid:087499704 hgt:74in ecl:grn iyr:2012 eyr:2010 byr:2002\n\
                         hcl:#623a2f\n\n";
-        assert!(!has_valid_fields_and_values(passport));
+        assert!(!has_valid_fields_and_values(passport.as_bytes()));
     }
 
     #[test]
@@ -263,7 +292,7 @@ iyr:2011 ecl:brn hgt:59in";
         let passport =
             "pid:087499704 hgt:190in ecl:grn iyr:2012 eyr:2030 byr:2002\n\
                         hcl:#623a2f\n\n";
-        assert!(!has_valid_fields_and_values(passport));
+        assert!(!has_valid_fields_and_values(passport.as_bytes()));
     }
 
     #[test]
@@ -271,12 +300,12 @@ iyr:2011 ecl:brn hgt:59in";
         let passport =
             "pid:087499704 hgt:74in ecl:grn iyr:2012 eyr:2030 byr:2002\n\
                         hcl:623a2f\n\n";
-        assert!(!has_valid_fields_and_values(passport));
+        assert!(!has_valid_fields_and_values(passport.as_bytes()));
 
         let passport =
             "pid:087499704 hgt:74in ecl:grn iyr:2012 eyr:2030 byr:2002\n\
                         hcl:#623a2\n\n";
-        assert!(!has_valid_fields_and_values(passport));
+        assert!(!has_valid_fields_and_values(passport.as_bytes()));
     }
 
     #[test]
@@ -284,6 +313,6 @@ iyr:2011 ecl:brn hgt:59in";
         let passport =
             "pid:08749704 hgt:74in ecl:grn iyr:2012 eyr:2030 byr:2002\n\
                         hcl:#623a2f\n\n";
-        assert!(!has_valid_fields_and_values(passport));
+        assert!(!has_valid_fields_and_values(passport.as_bytes()));
     }
 }
