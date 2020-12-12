@@ -2,23 +2,19 @@ use std::convert::TryInto;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum Split {
-    Front,
-    Back,
-    Left,
-    Right,
+    Lower,
+    Upper,
 }
 
 pub fn parse(description: &[u8; 10]) -> [Split; 10] {
     use Split::*;
 
-    let mut results: [Split; 10] = [Front; 10];
+    let mut results: [Split; 10] = [Lower; 10];
 
     for (i, c) in description.iter().enumerate() {
         results[i] = match c {
-            b'F' => Front,
-            b'B' => Back,
-            b'L' => Left,
-            b'R' => Right,
+            b'F' | b'L' => Lower,
+            b'B' | b'R' => Upper,
             _ => panic!("Unknown split: {}", c),
         }
     }
@@ -26,55 +22,38 @@ pub fn parse(description: &[u8; 10]) -> [Split; 10] {
     results
 }
 
-fn locate_seat(path: [Split; 10]) -> (u8, u8) {
+fn traverse(path: &[Split]) -> usize {
     use Split::*;
 
-    let mut step = 64;
-    let mut lower = 0;
-    let mut upper = 127u8;
+    let mut step = 1usize << (path.len() - 1);
+    let mut lower = 0usize;
+    let mut upper = (step << 1) - 1;
 
-    for p in path[..6].iter() {
+    for p in path[..path.len() - 1].iter() {
         match p {
-            Front => upper -= step,
-            Back => lower += step,
-            _ => panic!("Didn't expect {:?} in row context", p),
+            Lower => upper = upper.checked_sub(step).unwrap(),
+            Upper => lower += step,
         }
 
         step = step >> 1;
     }
 
-    let row = match path[6] {
-        Front => lower,
-        Back => upper,
-        _ => panic!("Didn't expect {:?} in row context", path[6]),
-    };
-
-    let mut step = 4;
-    let mut lower = 0;
-    let mut upper = 7u8;
-
-    for p in path[7..9].iter() {
-        match p {
-            Right => lower += step,
-            Left => upper -= step,
-            _ => panic!("Didn't expect {:?} in col context", p),
-        }
-
-        step = step >> 1;
+    match path[path.len() - 1] {
+        Lower => lower,
+        Upper => upper,
     }
+}
 
-    let col = match path[9] {
-        Right => upper,
-        Left => lower,
-        _ => panic!("Didn't expect {:?} in col context", path[9]),
-    };
+pub fn locate_seat(path: [Split; 10]) -> (usize, usize) {
+    let row = traverse(&path[..7]);
+    let col = traverse(&path[7..]);
 
     (row, col)
 }
 
-pub fn seat_id(description: &[u8]) -> u32 {
+pub fn seat_id(description: &[u8]) -> usize {
     let (row, col) = locate_seat(parse(description.try_into().unwrap()));
-    (row as u32) * 8u32 + (col as u32)
+    row * 8usize + col
 }
 
 #[cfg(test)]
@@ -87,8 +66,8 @@ mod tests {
 
         assert_eq!(
             [
-                Front, Back, Front, Back, Back, Front, Front, Right, Left,
-                Right
+                Lower, Upper, Lower, Upper, Upper, Lower, Lower, Upper, Lower,
+                Upper
             ],
             parse("FBFBBFFRLR".as_bytes().try_into().unwrap())
         )
@@ -104,6 +83,6 @@ mod tests {
 
     #[test]
     fn seat_ids() {
-        assert_eq!(567u32, seat_id("BFFFBBFRRR".as_bytes().try_into().unwrap()))
+        assert_eq!(567, seat_id("BFFFBBFRRR".as_bytes().try_into().unwrap()))
     }
 }

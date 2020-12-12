@@ -1,5 +1,6 @@
 use aoc2020::{day1, day2, day3, day4, day5};
 use clap::App;
+use std::convert::TryInto;
 use std::fs;
 
 fn main() {
@@ -119,4 +120,27 @@ fn solve_day5() {
         .max()
         .unwrap();
     println!("{}", max);
+
+    println!("## Part 2\n");
+    let mut exists: [[bool; 8]; 128] = [[false; 8]; 128];
+    let seats = input.split("\n").filter(|s| !s.is_empty()).map(|s| {
+        day5::locate_seat(day5::parse(s.as_bytes().try_into().unwrap()))
+    });
+
+    for (row, col) in seats {
+        exists[row][col] = true
+    }
+
+    for (row_id, row) in exists.iter().enumerate() {
+        for (seat_id, seat) in row.iter().enumerate() {
+            if !seat {
+                println!(
+                    "Empty seat: ({}, {}) - id: {}",
+                    row_id,
+                    seat_id,
+                    row_id * 8 + seat_id
+                );
+            }
+        }
+    }
 }
