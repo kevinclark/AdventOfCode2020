@@ -206,6 +206,10 @@ fn has_valid_fields_and_values(passport_declaration: &[u8]) -> bool {
 
         // Move the range up
         left = right + 1;
+
+        // Note that it's possible we miss a separator when we jump right ahead.
+        // In that case, the range is going to be invalid, which is what the
+        // result would be if this jump isn't a valid assumption.
         right += 4
     }
 
