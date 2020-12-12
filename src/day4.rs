@@ -178,12 +178,12 @@ fn has_valid_fields_and_values(passport_declaration: &[u8]) -> bool {
     use PassportState::*;
 
     let mut left = 0;
-    let mut right = 0;
+    let mut right = left + 3;
     let mut mask = 0u8;
 
     let len = passport_declaration.len();
 
-    while right <= len && left + 3 <= len {
+    while right <= len {
         if right < len {
             let c = &passport_declaration[right];
 
@@ -205,8 +205,8 @@ fn has_valid_fields_and_values(passport_declaration: &[u8]) -> bool {
         }
 
         // Move the range up
-        right += 1;
-        left = right;
+        left = right + 1;
+        right += 4
     }
 
     return mask >= 0xfe;
