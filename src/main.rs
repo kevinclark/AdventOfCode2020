@@ -1,5 +1,6 @@
 use aoc2020::{day1, day2, day3, day4, day5};
 use clap::App;
+use std::collections::HashSet;
 use std::convert::TryInto;
 use std::fs;
 
@@ -10,6 +11,7 @@ fn main() {
         .arg_from_usage("--day3... 'runs the day 3 solution'")
         .arg_from_usage("--day4... 'runs the day 4 solution'")
         .arg_from_usage("--day5... 'runs the day 5 solution'")
+        .arg_from_usage("--day6... 'runs the day 6 solution'")
         .get_matches();
 
     if matches.is_present("day1") {
@@ -30,6 +32,10 @@ fn main() {
 
     if matches.is_present("day5") {
         solve_day5()
+    }
+
+    if matches.is_present("day6") {
+        solve_day6()
     }
 }
 
@@ -143,4 +149,23 @@ fn solve_day5() {
             }
         }
     }
+}
+
+fn solve_day6() {
+    println!("# Day 5\n");
+
+    let input = &fs::read_to_string("input/6.txt").unwrap();
+
+    let count: usize = input
+        .split("\n\n")
+        .filter(|s| !s.is_empty())
+        .map(|s| {
+            s.lines()
+                .flat_map(|l| l.chars())
+                .collect::<HashSet<_>>()
+                .len()
+        })
+        .sum();
+
+    println!("Part 1: {}", count);
 }
