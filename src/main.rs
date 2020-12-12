@@ -156,7 +156,7 @@ fn solve_day6() {
 
     let input = &fs::read_to_string("input/6.txt").unwrap();
 
-    let count: usize = input
+    let part_1: usize = input
         .split("\n\n")
         .filter(|s| !s.is_empty())
         .map(|s| {
@@ -167,5 +167,22 @@ fn solve_day6() {
         })
         .sum();
 
-    println!("Part 1: {}", count);
+    println!("Part 1: {}", part_1);
+
+    let part_2: usize = input
+        .split("\n\n")
+        .filter(|s| !s.is_empty())
+        .map(|s| {
+            let sets: Vec<HashSet<_>> = s
+                .lines()
+                .map(|l| l.chars().collect::<HashSet<_>>())
+                .collect();
+            sets[0]
+                .iter()
+                .filter(|k| sets[1..].iter().all(|s| s.contains(k)))
+                .count()
+        })
+        .sum();
+
+    println!("Part 2: {}", part_2);
 }
